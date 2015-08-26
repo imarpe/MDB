@@ -18,3 +18,18 @@ BHcpue = function(data, stdVessel, plot = FALSE, col, ... ){
   }
   return(stdCPUE/mean(stdCPUE, na.rm=TRUE))
 }
+
+
+lag = function(x, lag=0, freq=12) {
+  lag = lag %% freq
+  if(lag==0) return(x)
+  yini = x[1] - freq/12
+  output = c(rep(yini, lag), x)
+  length(output) = length(x)
+  return(output)
+}
+
+
+
+
+
