@@ -2,23 +2,24 @@ rm(list = ls(all = TRUE))
 graphics.off() 
 gc() 
 
-library(BRugs)
-library(R2WinBUGS)
-library(R2jags)
+# require libraries -------------------------------------------------------
+x = c("BRugs", "R2WinBUGS", "R2jags")
+lapply(x, require, character.only = TRUE)
 
-#model in BUGS code
+
+# Model in BUGS code ------------------------------------------------------
 sink("surplusProduction.txt")
 cat("
     model
     {
     # priors K
-    K ~ dlnorm(11.92, 10)I(10000, 200000)
-    
+    K ~ dlnorm(15.92, 10)I(10000, 500000)
+
     #priors r
-    r ~ dnorm(0.84, 0.13)I(0.01, 1.2)
+    r ~ dnorm(0.6, 500)I(0.01, 1.2)
     
     #prior q
-    iq ~ dlnorm(-9, 16)#I(0.0001, 0.01)
+    iq ~ dgamma(0.001, 0.001)#I(0.5, 200) #Non informative prior
     q <- 1/iq
     
     #priors isigma itau
@@ -52,31 +53,56 @@ cat("
     #additional parameters and preditions
     MSP <-  r*K/4
     EMSP <-  r/(2*q)
+    BMSY <- K/2
     P2015 <-  P[N] + r*P[N]*(1-P[N]) - C[N]/K
     B2015 <-  P2015*K
     }
     ",fill=TRUE)
 sink()
-#end of BUGS model code
+# End of BUGS model code --------------------------------------------------
 
-#No Oficial data
-C = c()
-I = c()
-N = 15
+
+# Data --------------------------------------------------------------------
+
+C = c(28025, 29787, 35651, 31456, 37078, 33755, 35333, 49473, 57153, 53359, 43688, 58961, 55830, 50000) #Official catch data FAO
+I = c(2.2587839, 1.6809916, 1.1716501, 0.8808423, 0.8579199, 0.8192171, 0.7820640, 0.8267496, 0.7489146,
+      0.6116128, 0.6667181, 0.8404752, 0.7942241, 0.9448188) #Standardized catch rate (using hold capacity)
+N = length(C)
 
 data.list = list("N" = N, "C" = C, "I" = I)
 inits.list = function(){
-  list(K = runif(1, 10000, 200000),
+  list(K = runif(1, 10000, 500000),
        r = runif(1, 0.01, 1.2), 
-       P = runif(15, 0.5, 1), 
-       iq = runif(1, 0.1, 0.1), 
-       isigma2 = runif(1, 80, 150), 
-       itau2 = runif(1, 90, 120))
+       P = runif(14, 0.5, 1), 
+       iq = runif(1, 0.001, 0.001), 
+       isigma2 = 100, 
+       itau2 = 100)
 }
 
 
-# specify which stochastic quantities ("parameters") to parametros
-parametros = c("r", "K", "MSP", "EMSP", "B2015", "sigma2", "tau2", "q")
+
+# Specify which stochastic quantities ("parameters") to parametros --------
+
+parametros = c("r", "K",  "q", "BMSY", "MSP", "sigma2", "tau2", "I.new")
 
 out.jags = jags(data.list,  inits.list, parametros, "surplusProduction.txt", 
-                n.chains = 3, n.thin = 10, n.iter = 100000, n.burnin = 1000)
+                n.chains = 3, n.thin = 10, n.iter = 500000, n.burnin = 1000)
+
+out.jags
+
+
+# Plots -------------------------------------------------------------------
+
+par(mfrow = c(3,2))
+hist(out.jags$BUGSoutput$sims.list$K, col = "grey", xlab = "K (Carriying capacity)",main ="")
+box()
+hist(out.jags$BUGSoutput$sims.list$r, col = "blue", xlab = "r (Intrinsec growt population rate)", main ="")
+box()
+hist(out.jags$BUGSoutput$sims.list$q, col = "red", xlab = "q (catchability)", main ="")
+box()
+hist(out.jags$BUGSoutput$sims.list$BMSY, col = "darkgreen", xlab = "Bmsy", main ="")
+box()
+hist(out.jags$BUGSoutput$sims.list$MSP, col = "green", xlab = "MSY", main ="")
+box()
+hist(out.jags$BUGSoutput$sims.list$sigma, col = "red", xlab = "sigma", main ="")
+box()
