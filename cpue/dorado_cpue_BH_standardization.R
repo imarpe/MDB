@@ -6,13 +6,15 @@ gc() # Clear memmory
 source("cpue_standardization_functions.R")
 
 # Data pre-procesamiento
-dorado = read.csv("dorado_data.csv")
-catch = (dorado$doradokg)/1000 #in tons
-effort = dorado$nHook   #effort
+perico = read.csv("perico.csv")
+catch = (perico$pericokg)/1000 #expresada en toneladas
+effort = perico$nHook   #elecci?n del esfuerzo
 
-#groups hold capacity
-breaks = c(5, 10, 20)
-dorado$holdCapacityGroup = cut(dorado$holdCapacity, breaks=c(0, breaks, Inf), labels = seq(length(breaks)+1))
+#Definiendo los grupos de embarcaciones por capacidad de bogeda
+breaks = c(5,10,20)
+perico$holdCapacityGroup = cut(perico$holdCapacity, breaks=c(0, breaks, Inf), labels = seq(length(breaks)+1))
 
-#CPUE Standardization (Beverton y Holt)
-BHcpue(dorado, 2, plot = TRUE, col = "red")
+#Estandarizaci?n CPUE (Beverton y Holt)
+BHcpue(perico, 2, plot = TRUE, col = "red")
+title("Artisanal 2000 - 2014")
+

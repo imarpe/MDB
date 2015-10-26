@@ -11,25 +11,31 @@ BHcpue = function(data, stdVessel, plot = FALSE, col, ... ){
   if(plot==TRUE){
     plot(x = stdCPUE/mean(stdCPUE,na.rm = TRUE), axes=FALSE, type = "b", pch=19, lwd = 2,
          ylab = "Estandardized catch rate",xlab = "year", col = col)
-    axis(side = 1, at = 1:length(unique(data$year)),
+    axis(side = 1, at = 1:length(unique(data$year)), las = 2,
          labels = seq(sort(unique(data$year))[1], rev(sort(unique(data$year)))[1]))
-    axis(2,las=1)
+    axis(2, las=1)
     box()
   }
   return(stdCPUE/mean(stdCPUE, na.rm=TRUE))
 }
 
-
-lag = function(x, lag=0, freq=12) {
-  lag = lag %% freq
-  if(lag==0) return(x)
-  yini = x[1] - freq/12
-  output = c(rep(yini, lag), x)
-  length(output) = length(x)
-  return(output)
+BHcpue2 = function(data, stdVessel, plot = FALSE, col, ...){
+  catchByHoldcapacity  = tapply(data$catch, INDEX = data$holdCapacityGroup, sum)
+  effortByHoldcapacity = tapply(data$effort, INDEX = data$holdCapacityGroup, sum)
+  std1                 = catchByHoldcapacity/effortByHoldcapacity
+  std                  = data.frame(holdCapacityGroup = seq_along(unique(data$holdCapacityGroup)),
+                                    RFP = as.vector(std1/std1[stdVessel]))
+  data                 = merge(data, std)
+  data$stdEffort       = data$effort*data$RFP
+  CPUE                 = tapply(data$catch, INDEX = data$year, sum)/tapply(data$stdEffort, INDEX = data$year, sum)
+  stdCPUE              = CPUE/mean(CPUE,na.rm = TRUE)
+  if(plot==TRUE){
+    plot(x = stdCPUE, axes=FALSE, type = "b", pch=19, lwd = 2, ylim = c(0.9*min(stdCPUE), 1.1*max(stdCPUE)),
+         ylab = "Estandardized catch rate",xlab = "year", col = col)
+    axis(side = 1, at = 1:length(unique(data$year)), las = 2,
+         labels = seq(sort(unique(data$year))[1], rev(sort(unique(data$year)))[1]))
+    axis(2, las = 1)
+    box()
+  }
+  return(stdCPUE)
 }
-
-
-
-
-
