@@ -14,7 +14,6 @@ cat("
     {
     # priors K
     K ~ dlnorm(15.92, 10)I(10000, 500000)
-
     #priors r
     r ~ dnorm(0.6, 500)I(0.01, 1.2)
     
@@ -89,31 +88,3 @@ out.jags = jags(data.list,  inits.list, parametros, "surplusProduction.txt",
                 n.chains = 3, n.thin = 10, n.iter = 500000, n.burnin = 1000)
 
 out.jags
-
-
-# Plots -------------------------------------------------------------------
-
-par(mfrow = c(3,2))
-hist(out.jags$BUGSoutput$sims.list$K, col = "grey", xlab = "K (Carriying capacity)",main ="")
-box()
-hist(out.jags$BUGSoutput$sims.list$r, col = "blue", xlab = "r (Intrinsec growt population rate)", main ="")
-box()
-hist(out.jags$BUGSoutput$sims.list$q, col = "red", xlab = "q (catchability)", main ="")
-box()
-hist(out.jags$BUGSoutput$sims.list$BMSY, col = "darkgreen", xlab = "Bmsy", main ="")
-box()
-hist(out.jags$BUGSoutput$sims.list$MSP, col = "green", xlab = "MSY", main ="")
-box()
-hist(out.jags$BUGSoutput$sims.list$sigma, col = "red", xlab = "sigma", main ="")
-box()
-
-year = 2001:2014
-plot(year, I, pch = 19, ylab = "CPUE", ylim = c(0.25, 2.5), axes = FALSE)
-axis(1, seq(2001,2014,1), las =2)
-axis(2)
-box()
-lines(year, out.jags$BUGSoutput$median$I.new, col = "red", lwd =2)
-lines(year, out.jags$BUGSoutput$median$I.new+out.jags$BUGSoutput$sd$I.new, col = "red", lwd = 2, lty = 2)
-lines(year, out.jags$BUGSoutput$median$I.new-out.jags$BUGSoutput$sd$I.new, col = "red", lwd = 2, lty = 2)
-legend("topright",c("Observed","Predicted", "Credible Interval"), pch=c(19,-1, -1),
-       lty=c(0,1, 2), col= c(1,2,2), bty="n", lwd = c(-1, 2, 2))
