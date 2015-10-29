@@ -39,3 +39,29 @@ BHcpue2 = function(data, stdVessel, plot = FALSE, col, ...){
   }
   return(stdCPUE)
 }
+
+
+lag = function(x, lag=0, freq=12) {
+  lag = lag %% freq
+  if(lag==0) return(x)
+  yini = x[1] - freq/12
+  output = c(rep(yini, lag), x)
+  length(output) = length(x)
+  return(output)
+}
+
+daysTrip = function(date_ini, date_end, format = "%d/%m/%Y"){
+  date_ini = as.character(date_ini)
+  date_end = as.character(date_end)
+  output     = as.numeric(as.Date(date_end, format = format) - as.Date(date_ini, format = format))
+  if(length(date_ini) != length(date_end)){
+    stop("date_ini and date_end do not have teh same length")
+  }
+  for(i in seq_along(output))
+    if(output[i] < 0){
+      stop("date_end must be greater than date_ini")
+    }
+  return(output)
+}
+
+

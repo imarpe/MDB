@@ -5,7 +5,7 @@ gc() # Clear memmory (residuals of operations?, cache? Not sure)
 
 require(gam)
 require(pgirmess)
-source("pota_functions.R")
+source("cpue_standardization_functions.R")
 
 # Data pre-processing -----------------------------------------------------
 
@@ -196,3 +196,4 @@ axis(1, las = 2, seq(1999, 2015, 1))
 axis(2, las = 1)
 box()
 title("quarter")
+
